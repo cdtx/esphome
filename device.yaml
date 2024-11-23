@@ -98,6 +98,15 @@ binary_sensor:
         - delay: 5s
         - switch.turn_off: backlight
 
+text_sensor:
+  - platform: wifi_info
+    ip_address:
+      name: ESP IP Address
+    ssid:
+      name: ESP Connected SSID
+    scan_results:
+      name: ESP Latest Scan Results
+
 switch:
   - platform: gpio
     internal: true
