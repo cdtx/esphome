@@ -82,6 +82,29 @@ sensor:
       accuracy_decimals: 1
     update_interval: 60s
 
+binary_sensor:
+  - platform: gpio
+    internal: true
+    name: "Backlight request"
+    id: backlight_request
+    pin:
+      number: GPIO5
+      mode:
+        input: true
+        pullup: true
+    on_press:
+      then:
+        - switch.turn_on: backlight
+        - delay: 5s
+        - switch.turn_off: backlight
+
+switch:
+  - platform: gpio
+    internal: true
+    pin: GPIO12
+    name: "backlight"
+    id: backlight
+
 # Example configuration entry
 font:
   # gfonts://family[@weight]
