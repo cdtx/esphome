@@ -59,6 +59,28 @@ sensor:
     on_value:
       then:
       - component.update: eink_display
+  - platform: am2320
+    i2c_id: bus_a
+    temperature:
+      name: "temperature"
+      id: temperature
+      unit_of_measurement: "°C"
+      icon: "mdi:water-percent"
+      device_class: "temperature"
+      state_class: "measurement"
+      accuracy_decimals: 1
+      on_value:
+        then:
+        - component.update: eink_display
+    humidity:
+      id: humidity
+      name: "humidity"
+      unit_of_measurement: "%"
+      icon: "mdi:water-percent"
+      device_class: "humidity"
+      state_class: "measurement"
+      accuracy_decimals: 1
+    update_interval: 60s
 
 # Example configuration entry
 font:
@@ -66,6 +88,12 @@ font:
   - file: "gfonts://Merienda"
     id: font1
     size: 40
+
+i2c:
+  - id: bus_a
+    sda: GPIO32
+    scl: GPIO33
+    scan: true
 
 spi:
   clk_pin: GPIO13
@@ -87,5 +115,5 @@ display:
 
       it.image(0, 0, id(logo));
       it.strftime(50, 150, id(font1), TextAlign::CENTER, "%H:%M", id(ntp_time).now());
-      it.printf(150, 150, id(font1), TextAlign::CENTER, "%.1f", id(temperature_salon).state);
+      it.printf(150, 150, id(font1), TextAlign::CENTER, "%.1f°", id(temperature).state);
 
