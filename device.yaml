@@ -8,6 +8,9 @@ esphome:
         - logger.log: "Initial sensor data received: Refreshing display..."
         - script.execute: update_screen
 
+external_components:
+  - source: components/
+
 esp32:
   board: esp32dev
   framework:
