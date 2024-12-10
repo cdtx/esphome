@@ -1,0 +1,48 @@
+esphome:
+  name: fujitsu
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+safe_mode:
+  boot_is_good_after: 1min
+
+# Add the dependency to pull in the fujitsu heat pump component
+external_components:
+  - source:
+      type: local
+      path: components/esphome-fujitsu/components
+    components: [fujitsu_heat_pump]
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  password: ""
+
+ota:
+  - platform: esphome
+    password: "cdtx"
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Fujitsu Fallback Hotspot"
+    password: "123456789"
+
+captive_portal:
+    
+climate:
+- platform: fujitsu_heat_pump
+  name: My Fujitsu Heat Pump
+  # The rest of these options are optional
+  tx_pin: GPIO17
+  rx_pin: GPIO16
+    # remote_temperature_id: some_temp_sensor # TODO see FujitsuClimate.cpp to correct the implementation
+  master: false
+
