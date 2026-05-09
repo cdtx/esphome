@@ -1,0 +1,167 @@
+external_components:
+  - source: github://pr#7751
+    components: [ waveshare_epaper ]
+
+esphome:
+  name: home-paper-display
+  friendly_name: home_paper_display
+  on_boot:
+      priority: 200.0
+      then:
+        - delay: 10s
+        - logger.log: "Initial sensor data received: Refreshing display..."
+        - component.update: eink_display
+
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+# Script for updating screen - Refresh display and publish refresh count and time. (Thanks @paviro!)
+script:
+  - id: update_screen
+    then:
+      - component.update: eink_display
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: "1SyJ52UX1ZlzgNJHc1euhs91u1J/14q+oZoA2eBBK1Y="
+
+ota:
+  - platform: esphome
+    password: "dda3de2e6fffca58340ae2c00d27cdb5"
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+captive_portal:
+
+time:
+  - platform: sntp
+    id: ntp_time
+    timezone: Europe/Paris
+    servers: 
+    - mafreebox.free.fr
+    on_time:
+      - seconds: 0
+        minutes: /1
+        then:
+          - component.update: eink_display
+sensor:
+  - platform: homeassistant
+    entity_id: sensor.powermeter_total_power
+    id: total_power
+    on_value:
+      then:
+      - component.update: eink_display
+text_sensor:
+  - platform: homeassistant
+    entity_id: sensor.fipcurrent
+    id: fipcurrent
+    on_value:
+      then:
+      - component.update: eink_display
+  - platform: homeassistant
+    entity_id: media_player.mopidy
+    id: mopidy_status
+    on_value:
+      then:
+      - component.update: eink_display
+  - platform: homeassistant
+    entity_id: media_player.mopidy
+    attribute: media_title
+    id: mopidy_title
+    on_value:
+      then:
+      - component.update: eink_display
+
+# Example configuration entry
+font:
+  # gfonts://family[@weight]
+  - file: "gfonts://Merienda"
+    id: font80
+    size: 80
+  - file: "gfonts://Lora"
+    id: font50
+    size: 50
+  - file: "gfonts://Lora"
+    id: font40
+    size: 40
+  - file: "gfonts://Lora"
+    id: font30
+    size: 30
+  - file: "gfonts://Lora"
+    id: font25
+    size: 25
+
+image:
+  - file: "kiki_nb.jpg"
+    id: kikis
+    type: BINARY
+  - file: "pontdarc_bw.jpg"
+    id: pontdarc
+    type: BINARY
+  - file: "bolt.png"
+    id: bolt
+    resize: 50x50
+    type: BINARY
+  - file: "fm-radio.png"
+    id: radio
+    resize: 30x30
+    type: BINARY
+
+spi:
+  clk_pin: GPIO13
+  mosi_pin: GPIO14
+
+display:
+  - platform: waveshare_epaper
+    id: eink_display
+    cs_pin: GPIO15
+    dc_pin: GPIO27
+    busy_pin: 
+      number: GPIO25
+      inverted: true
+    reset_pin: GPIO26
+    model: 7.50inV2p
+      # reset_duration: 2ms
+      # setup_priority: 1000
+    full_update_every: 3600
+    lambda: |-
+
+      it.line(20, 70, 780, 70);
+      it.line(400, 90, 400, 390);
+      it.line(20, 410, 780, 410);
+
+      // Date/Time
+      it.strftime(10, 20, id(font30), TextAlign::CENTER_LEFT, "%a %d/%m/%y", id(ntp_time).now());
+      it.strftime(10, 50, id(font30), TextAlign::CENTER_LEFT, "%H:%M", id(ntp_time).now());
+
+      // Power
+      it.image(350, 35, id(bolt), ImageAlign::CENTER);
+      it.printf(380, 35, id(font50), TextAlign::CENTER_LEFT, "%.0f W", id(total_power).state);
+
+      // Photos
+      it.image(10, 240, id(pontdarc), ImageAlign::CENTER_LEFT);
+      it.image(410, 240, id(kikis), ImageAlign::CENTER_LEFT);
+
+      // Current media
+      if( strcmp(id(mopidy_status).state.c_str(), "playing") == 0 ) {
+        it.image(10, 445, id(radio), ImageAlign::CENTER_LEFT);
+        // FIP
+        if( strcmp(id(mopidy_title).state.c_str(), "fip-midfi.mp3") == 0 ) {
+          it.printf(50, 430, id(font25), TextAlign::CENTER_LEFT, "FIP");
+          it.printf(50, 460, id(font25), TextAlign::CENTER_LEFT, "%s", id(fipcurrent).state.c_str());
+        }
+      }
+
+
+
+
+    
