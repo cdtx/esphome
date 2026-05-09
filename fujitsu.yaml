@@ -21,7 +21,9 @@ logger:
 
 # Enable Home Assistant API
 api:
-  password: ""
+  encryption:
+    key: !secret esphome_encryption_key
+
 
 ota:
   - platform: esphome
@@ -38,11 +40,25 @@ wifi:
 captive_portal:
     
 climate:
-- platform: fujitsu_heat_pump
-  name: My Fujitsu Heat Pump
-  # The rest of these options are optional
-  tx_pin: GPIO17
-  rx_pin: GPIO16
-    # remote_temperature_id: some_temp_sensor # TODO see FujitsuClimate.cpp to correct the implementation
-  master: false
+  - platform: fujitsu_heat_pump
+    name: My Fujitsu Heat Pump
+    # The rest of these options are optional
+    tx_pin: GPIO26
+    rx_pin: GPIO25
+      # remote_temperature_id: some_temp_sensor # TODO see FujitsuClimate.cpp to correct the implementation
+    master: false
+    on_state:
+      - lambda: |-
+          if (x.mode != CLIMATE_MODE_OFF) {
+            id(backlight).turn_on();
+          }
+          else {
+            id(backlight).turn_off();
+          }
 
+
+switch:
+  - platform: gpio
+    pin: GPIO27
+    name: "fujitsu backlight"
+    id: backlight
