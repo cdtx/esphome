@@ -1,0 +1,4 @@
+[submodule "components/esphome-fujitsu"]
+	path = components/esphome-fujitsu
+	url = https://github.com/cdtx/esphome-fujitsu.git
+    branch = cdtx/proper-component-secondary
